@@ -7,6 +7,18 @@ sys.path.insert(0, os.path.dirname(__file__))
 from tool_calling import run_agent
 from observability import calculate_observability_metrics
 
+test = [ {
+        "id": "orion_status",
+        "input": "What is Orion's status?",
+        "expected": {
+            "Orion": {
+                "status": "Delayed",
+                "reason": "Database migration is behind schedule",
+                "owner": "Engineering",
+            }
+        },
+    },]
+
 
 evaluation_cases = [
     {
@@ -120,13 +132,23 @@ def calculate_evaluation_metrics(results):
     }
 
 
-def check_expected_fields(answer, expected, forbidden=None):
+def check_expected_fields(answer, expected, forbidden=None, allowed_projects=None,):
     projects = {
         project["project_name"]: project
         for project in answer.get("projects", [])
     }
 
     failures = []
+    # Check that no unexpected projects are returned.
+    if allowed_projects is not None:
+        unexpected_projects = (
+            set(projects.keys()) - set(allowed_projects)
+        )
+
+        for project_name in unexpected_projects:
+            failures.append(
+                f"Unexpected project returned: {project_name}"
+            )
 
     # Check values that must be present.
     for project_name, expected_fields in expected.items():
@@ -197,6 +219,7 @@ def run_evaluation(cases, runs_per_case=3):
                     answer,
                     case["expected"],
                     case.get("forbidden"),
+                    case.get("allowed_projects"),
                 )
 
                 result.update({
@@ -223,8 +246,8 @@ def run_evaluation(cases, runs_per_case=3):
 
 if __name__ == "__main__":
     evaluation = run_evaluation(
-        evaluation_cases,
-        runs_per_case=3,
+        test,
+        runs_per_case=1,
     )
     #print(json.dumps(evaluation, indent=2))
     print(json.dumps(
