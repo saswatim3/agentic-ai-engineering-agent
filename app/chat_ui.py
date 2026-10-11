@@ -39,8 +39,16 @@ if prompt := st.chat_input("Ask about a project..."):
                 result = run_agent(prompt)
                 answer = result["answer"]
 
-                response = str(answer)
-                st.markdown(response)
+                if isinstance(answer, dict):
+                    response = answer.get("answer", str(answer))
+                    st.markdown(response)
+
+                    projects = answer.get("projects", [])
+                    if projects:
+                        st.dataframe(projects, use_container_width=True)
+                else:
+                    response = str(answer)
+                    st.markdown(response)
 
                 with st.expander("Inspect agent trace"):
                     trace = result.get("trace", {})

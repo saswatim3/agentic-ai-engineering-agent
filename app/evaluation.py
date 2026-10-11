@@ -43,18 +43,11 @@ evaluation_cases = [
     {
         "id": "unknown_project",
         "input": "What is Orion's status?",
-        "expected": {
-            "Orion": {
-                "status": "Unknown",
-                "reason": "Project not found",
-                "owner": "Unknown",
-            }
-        },
-        "forbidden": {
-            "Orion": {
-                "status": ["Delayed", "On Track"],
-            }
-        },
+        # New contract: unknown projects must produce an empty
+        # "projects" array; the "not found" explanation lives in
+        # "answer" and is verified by the judge.
+        "expected": {},
+        "allowed_projects": [],
     },
     {
         "id": "mercury_owner",
